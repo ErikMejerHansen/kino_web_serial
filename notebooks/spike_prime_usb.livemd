@@ -2,7 +2,7 @@
 
 ```elixir
 Mix.install([
-  {:kino_web_serial, github: "ErikMejerHansen/kino_web_serial"},
+  {:kino_web_serial, "~> 0.1.0"},
   {:ex_spike, "~> 0.1.0"}
 ])
 ```
