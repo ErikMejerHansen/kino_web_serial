@@ -1,0 +1,215 @@
+# SPIKE Prime over Web Serial
+
+```elixir
+Mix.install([
+  {:kino_web_serial, github: "ErikMejerHansen/kino_web_serial"},
+  {:ex_spike, "~> 0.1.0"}
+])
+```
+
+## About
+
+This notebook talks to a LEGO® SPIKE™ Prime hub over a USB cable.
+[KinoWebSerial](https://github.com/ErikMejerHansen/kino_web_serial)
+carries the bytes over your browser's Web Serial API, and
+[ExSPIKE](https://github.com/ErikMejerHansen/ex_spike) turns them into
+messages.
+
+The hub speaks the same protocol over USB as over Bluetooth: COBS
+framed messages on a serial port at 115200 baud
+([LEGO/spike-prime-docs#11](https://github.com/LEGO/spike-prime-docs/issues/11)).
+
+You need a Chromium based browser (Chrome, Edge) and a hub running the
+SPIKE App 3 firmware. Connect the hub to your computer with a USB cable
+and turn it on. Close the SPIKE App first, only one program can use the
+port at a time.
+
+> ExSPIKE and KinoWebSerial are not affiliated with, sponsored,
+> authorized or endorsed by The LEGO Group. LEGO® and SPIKE™ are
+> trademarks of The LEGO Group.
+
+## Connect
+
+Evaluate the Smart Cell below, click **Connect** and pick your hub. The
+cell only offers LEGO hubs (USB vendor `0694`, product `0009`).
+
+The monitor shows the raw frames going back and forth, in hex. Click
+**Send** to send the prefilled `00 00 02`: an encoded `InfoRequest`.
+
+<!-- livebook:{"attrs":"eyJiYXVkX3JhdGUiOjExNTIwMCwiZGF0YV9iaXRzIjo4LCJkaXNwbGF5IjoiaGV4IiwiZmxvd19jb250cm9sIjoibm9uZSIsInBhcml0eSI6Im5vbmUiLCJwb3J0X2lkIjoic2VyaWFsLXNwaWtlLWh1YiIsInNlbmQiOnsiZm9ybWF0IjoiaGV4IiwibGluZV9lbmRpbmciOiJub25lIiwidmFsdWUiOiIwMCAwMCAwMiJ9LCJzdG9wX2JpdHMiOjEsInVzYl9wcm9kdWN0X2lkIjoiMDAwOSIsInVzYl92ZW5kb3JfaWQiOiIwNjk0IiwidmFyaWFibGUiOiJodWJfcG9ydCJ9","chunks":null,"kind":"Elixir.KinoWebSerial.SmartCell","livebook_object":"smart_cell"} -->
+
+```elixir
+hub_port = KinoWebSerial.port("serial-spike-hub")
+```
+
+## A small helper
+
+`Hub.request/3` sends an ExSPIKE message and waits for the reply.
+
+A serial port is a byte stream: a chunk of data can hold part of a
+frame, or several frames. ExSPIKE is stateless, so the helper keeps the
+bytes of an unfinished frame and hands them back to
+`ExSPIKE.decode_stream/1` with the next chunk.
+
+```elixir
+defmodule Hub do
+  @doc "Sends a message (a struct or raw bytes) and waits for a reply of the given type."
+  def request(port, message, reply_type, timeout \\ 5_000) do
+    # Subscribe first, so the reply can't arrive before we listen
+    :ok = KinoWebSerial.subscribe(port)
+
+    try do
+      :ok = KinoWebSerial.write(port, ExSPIKE.encode(message))
+      await(port, reply_type, <<>>, timeout)
+    after
+      KinoWebSerial.unsubscribe(port)
+      flush(port)
+    end
+  end
+
+  defp await(port, reply_type, buffer, timeout) do
+    receive do
+      {:kino_web_serial, :data, ^port, bytes} ->
+        {results, rest} = ExSPIKE.decode_stream(buffer <> bytes)
+
+        case Enum.find(results, &match?({:ok, %{__struct__: ^reply_type}}, &1)) do
+          {:ok, reply} -> {:ok, reply}
+          nil -> await(port, reply_type, rest, timeout)
+        end
+
+      {:kino_web_serial, :disconnected, ^port} ->
+        {:error, :disconnected}
+    after
+      timeout -> {:error, :timeout}
+    end
+  end
+
+  defp flush(port) do
+    receive do
+      {:kino_web_serial, :data, ^port, _bytes} -> flush(port)
+    after
+      0 -> :ok
+    end
+  end
+end
+
+:ok = KinoWebSerial.await_connected(hub_port)
+```
+
+## Ask the hub about itself
+
+Always send an `InfoRequest` first. The reply tells us, among other
+things, the largest chunk for file transfers.
+
+```elixir
+alias ExSPIKE.{Message, Messages}
+
+{:ok, info} = Hub.request(hub_port, Messages.info_request(), Message.InfoResponse)
+```
+
+```elixir
+{:ok, %Message.GetHubNameResponse{name: name}} =
+  Hub.request(hub_port, Messages.get_hub_name(), Message.GetHubNameResponse)
+
+name
+```
+
+Messages can also be written as raw bytes. `0x1A` is a `DeviceUuidRequest`:
+
+```elixir
+{:ok, %Message.DeviceUuidResponse{uuid: uuid}} =
+  Hub.request(hub_port, <<0x1A>>, Message.DeviceUuidResponse)
+
+Base.encode16(uuid)
+```
+
+## Watch what the hub sends
+
+This cell listens to everything the hub sends, in the background. Console
+output from programs appears on the left, and sensor and motor readings
+on the right.
+
+```elixir
+console = Kino.Frame.new()
+sensors = Kino.Frame.new()
+
+hub_port
+|> KinoWebSerial.stream()
+|> Stream.transform(<<>>, fn bytes, buffer ->
+  {results, rest} = ExSPIKE.decode_stream(buffer <> bytes)
+  {for({:ok, message} <- results, do: message), rest}
+end)
+|> Kino.listen(fn
+  %Message.ConsoleNotification{text: text} ->
+    Kino.Frame.append(console, Kino.Text.new(text))
+
+  %Message.DeviceNotification{messages: devices} ->
+    Kino.Frame.render(sensors, Kino.Tree.new(devices))
+
+  _other ->
+    :ok
+end)
+
+Kino.Layout.grid([console, sensors], columns: 2, boxed: true)
+```
+
+Ask the hub to send its sensor and motor readings twice a second. Plug in
+a motor or sensor and watch the readings above change.
+
+```elixir
+Hub.request(hub_port, Messages.device_notifications(500), Message.DeviceNotificationResponse)
+```
+
+## Upload and run a program
+
+This uploads a MicroPython program to a slot and starts it. Its `print`
+output shows up in the console above.
+
+> This replaces the program stored in the slot.
+
+```elixir
+slot = 0
+
+program = """
+import runloop
+from hub import light_matrix
+
+print("Hello from Elixir")
+
+async def main():
+    await light_matrix.write("Hi From Elixir!")
+
+runloop.run(main())
+"""
+
+# The slot may already be empty, so any reply is fine here
+{:ok, _} = Hub.request(hub_port, Messages.clear_slot(slot), Message.ClearSlotResponse)
+
+upload = Messages.start_file_upload("program.py", slot, ExSPIKE.CRC.crc32(program))
+
+{:ok, %{status: :acknowledged}} =
+  Hub.request(hub_port, upload, Message.StartFileUploadResponse)
+
+for chunk <- Messages.transfer_chunks(program, info.max_chunk_size) do
+  {:ok, %{status: :acknowledged}} =
+    Hub.request(hub_port, chunk, Message.TransferChunkResponse)
+end
+
+Hub.request(hub_port, Messages.start_program(slot), Message.ProgramFlowResponse)
+```
+
+Stop the program:
+
+```elixir
+Hub.request(hub_port, Messages.stop_program(slot), Message.ProgramFlowResponse)
+```
+
+## Clean up
+
+Turn off the sensor readings, then close the port so other programs,
+like the SPIKE App, can use it.
+
+```elixir
+Hub.request(hub_port, Messages.device_notifications(0), Message.DeviceNotificationResponse)
+KinoWebSerial.disconnect(hub_port)
+```

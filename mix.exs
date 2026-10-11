@@ -52,7 +52,7 @@ defmodule KinoWebSerial.MixProject do
       main: "readme",
       source_url: @source_url,
       source_ref: "v#{@version}",
-      extras: ["README.md"]
+      extras: ["README.md", "notebooks/spike_prime_usb.livemd"]
     ]
   end
 

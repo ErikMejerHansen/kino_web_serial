@@ -76,6 +76,16 @@ serial
 
 See the `KinoWebSerial` module docs for all functions.
 
+## Example: LEGO® SPIKE™ Prime
+
+[![Run in Livebook](https://livebook.dev/badge/v1/blue.svg)](https://livebook.dev/run?url=https%3A%2F%2Fgithub.com%2FErikMejerHansen%2Fkino_web_serial%2Fblob%2Fmain%2Fnotebooks%2Fspike_prime_usb.livemd)
+
+[notebooks/spike_prime_usb.livemd](notebooks/spike_prime_usb.livemd)
+connects to a SPIKE Prime hub over USB, using
+[ExSPIKE](https://github.com/ErikMejerHansen/ex_spike) for the protocol.
+It asks the hub for its info, shows its console output and sensor
+readings, and uploads and runs a program.
+
 ## How it works
 
 Each Smart Cell starts a `KinoWebSerial.Port` GenServer. It holds the
