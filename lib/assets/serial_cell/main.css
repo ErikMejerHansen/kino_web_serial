@@ -1,0 +1,346 @@
+/* Follows the look of the official Kino smart cells (kino_db, kino_vega_lite) */
+
+.app {
+  font-family: "Inter";
+  box-sizing: border-box;
+
+  --gray-50: #f8fafc;
+  --gray-100: #f0f5f9;
+  --gray-200: #e1e8f0;
+  --gray-300: #cad5e0;
+  --gray-400: #91a4b7;
+  --gray-500: #61758a;
+  --gray-600: #445668;
+  --gray-800: #1c2a3a;
+  --gray-900: #0d1829;
+
+  --blue-100: #ecf0ff;
+  --blue-600: #3e64ff;
+  --blue-700: #2d4cdb;
+
+  --green-500: #4ade80;
+
+  --yellow-100: #fff7ec;
+  --yellow-600: #ffa83f;
+
+  --red-50: #fef2f2;
+  --red-300: #f1a3a6;
+  --red-600: #e2474d;
+}
+
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+}
+
+p {
+  margin: 0;
+}
+
+code {
+  font-family: "JetBrains Mono", monospace;
+}
+
+/* Layout */
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: var(--blue-100);
+  border: solid 1px var(--gray-300);
+  border-bottom-color: var(--gray-200);
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: solid 1px var(--gray-300);
+  border-top: none;
+  border-radius: 0 0 0.5rem 0.5rem;
+  font-size: 0.875rem;
+  color: var(--gray-600);
+}
+
+.grow {
+  flex-grow: 1;
+}
+
+/* Inputs */
+
+.inline-field {
+  display: flex;
+  align-items: baseline;
+}
+
+.inline-input-label {
+  padding-right: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gray-600);
+  text-transform: uppercase;
+}
+
+.input {
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  color: var(--gray-600);
+  background-color: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: 0.5rem;
+}
+
+.input::placeholder {
+  color: var(--gray-400);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--gray-300);
+}
+
+.input:disabled {
+  opacity: 0.6;
+}
+
+.input--sm {
+  width: 90px;
+}
+
+.input--xs {
+  width: 56px;
+}
+
+.input--send {
+  min-width: 0;
+  font-family: "JetBrains Mono", monospace;
+}
+
+select.input {
+  appearance: none;
+  padding-right: 28px;
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik01Ljk5OTg5IDQuOTc2NzFMMTAuMTI0OSAwLjg1MTcwOEwxMS4zMDMyIDIuMDMwMDRMNS45OTk4OSA3LjMzMzM3TDAuNjk2NTU1IDIuMDMwMDRMMS44NzQ4OSAwLjg1MTcwOEw1Ljk5OTg5IDQuOTc2NzFaIiBmaWxsPSIjNjE3NThBIi8+Cjwvc3ZnPgo=");
+  background-repeat: no-repeat;
+  background-position: center right 10px;
+  background-size: 10px;
+}
+
+/* Buttons */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gray-600);
+  background-color: white;
+  border: 1px solid var(--gray-300);
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: var(--gray-100);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.button--primary {
+  color: white;
+  background-color: var(--blue-600);
+  border-color: var(--blue-600);
+}
+
+.button--sm {
+  padding: 4px 10px;
+  font-size: 0.8125rem;
+}
+
+.button--primary:hover {
+  background-color: var(--blue-700);
+}
+
+/* Messages */
+
+.help {
+  color: var(--gray-500);
+}
+
+.box {
+  padding: 12px 16px;
+  border: solid 1px;
+  border-radius: 0.5rem;
+  color: var(--gray-900);
+}
+
+.box--warning {
+  background-color: var(--yellow-100);
+  border-color: var(--yellow-600);
+}
+
+.box--error {
+  background-color: var(--red-50);
+  border-color: var(--red-300);
+}
+
+/* Port */
+
+.status {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.port {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--gray-800);
+}
+
+.port-options {
+  color: var(--gray-500);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background-color: var(--green-500);
+}
+
+/* Monitor */
+
+.monitor {
+  border: 1px solid var(--gray-200);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.monitor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background-color: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--gray-500);
+}
+
+.toggle {
+  display: inline-flex;
+  padding: 2px;
+  background-color: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: 0.5rem;
+}
+
+.toggle-option {
+  padding: 2px 10px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--gray-500);
+  background: none;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+}
+
+.toggle-option--active {
+  color: var(--gray-800);
+  background-color: white;
+  box-shadow: 0 1px 2px rgba(13, 24, 41, 0.1);
+}
+
+.log {
+  height: 14rem;
+  padding: 6px 12px;
+  overflow-y: auto;
+  font-size: 0.8125rem;
+  resize: vertical;
+}
+
+.log:empty::before {
+  content: "No data sent or received yet.";
+  color: var(--gray-400);
+}
+
+.entry {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1px 0;
+}
+
+.entry-time {
+  flex-shrink: 0;
+  color: var(--gray-400);
+  font-variant-numeric: tabular-nums;
+}
+
+.entry-direction {
+  flex-shrink: 0;
+  width: 1ch;
+  color: var(--gray-400);
+}
+
+.entry code {
+  color: var(--gray-800);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.entry--tx code {
+  color: var(--blue-700);
+}
+
+.entry--error code,
+.entry--error .entry-direction {
+  color: var(--red-600);
+}
+
+.log .entry-hex,
+.log--hex .entry-text {
+  display: none;
+}
+
+.log--hex .entry-hex {
+  display: inline;
+}
+
+.send {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--gray-200);
+}
+
+@media (max-width: 640px) {
+  .send {
+    flex-wrap: wrap;
+  }
+}
